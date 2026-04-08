@@ -33,16 +33,33 @@ jobs:
       - uses: actions/checkout@v4
       - name: Build
         run: swift build -c release
-      - name: Package
+      - name: Package tar.gz
         run: |
           mkdir -p dist
           cp .build/release/orbital dist/orbital
           chmod +x dist/orbital
           tar -czf orbital-linux-x86_64.tar.gz -C dist orbital
+      - name: Package deb
+        run: |
+          tag="${GITHUB_REF#refs/tags/v}"
+          mkdir -p deb/DEBIAN deb/usr/local/bin
+          cp .build/release/orbital deb/usr/local/bin/orbital
+          chmod +x deb/usr/local/bin/orbital
+          cat > deb/DEBIAN/control <<CTRL
+          Package: orbital
+          Version: ${tag}
+          Architecture: amd64
+          Maintainer: OffskyLab <offskylab@users.noreply.github.com>
+          Description: Orbital — AI CLI environment manager for Claude Code, Codex, and Gemini CLI
+          CTRL
+          sed -i 's/^          //' deb/DEBIAN/control
+          dpkg-deb --build deb orbital_${tag}_amd64.deb
       - uses: actions/upload-artifact@v4
         with:
           name: orbital-linux-x86_64
-          path: orbital-linux-x86_64.tar.gz
+          path: |
+            orbital-linux-x86_64.tar.gz
+            orbital_*_amd64.deb
 
   build-linux-arm64:
     runs-on: ubuntu-24.04-arm
@@ -51,16 +68,33 @@ jobs:
       - uses: actions/checkout@v4
       - name: Build
         run: swift build -c release
-      - name: Package
+      - name: Package tar.gz
         run: |
           mkdir -p dist
           cp .build/release/orbital dist/orbital
           chmod +x dist/orbital
           tar -czf orbital-linux-arm64.tar.gz -C dist orbital
+      - name: Package deb
+        run: |
+          tag="${GITHUB_REF#refs/tags/v}"
+          mkdir -p deb/DEBIAN deb/usr/local/bin
+          cp .build/release/orbital deb/usr/local/bin/orbital
+          chmod +x deb/usr/local/bin/orbital
+          cat > deb/DEBIAN/control <<CTRL
+          Package: orbital
+          Version: ${tag}
+          Architecture: arm64
+          Maintainer: OffskyLab <offskylab@users.noreply.github.com>
+          Description: Orbital — AI CLI environment manager for Claude Code, Codex, and Gemini CLI
+          CTRL
+          sed -i 's/^          //' deb/DEBIAN/control
+          dpkg-deb --build deb orbital_${tag}_arm64.deb
       - uses: actions/upload-artifact@v4
         with:
           name: orbital-linux-arm64
-          path: orbital-linux-arm64.tar.gz
+          path: |
+            orbital-linux-arm64.tar.gz
+            orbital_*_arm64.deb
 
   release:
     needs: [build-macos-arm64, build-linux-x86_64, build-linux-arm64]
@@ -81,4 +115,59 @@ jobs:
             --generate-notes \
             artifacts/orbital-darwin-arm64/orbital-darwin-arm64.tar.gz \
             artifacts/orbital-linux-x86_64/orbital-linux-x86_64.tar.gz \
-            artifacts/orbital-linux-arm64/orbital-linux-arm64.tar.gz
+            artifacts/orbital-linux-x86_64/orbital_*_amd64.deb \
+            artifacts/orbital-linux-arm64/orbital-linux-arm64.tar.gz \
+            artifacts/orbital-linux-arm64/orbital_*_arm64.deb
+
+  update-apt:
+    needs: [release]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Checkout APT repo
+        uses: actions/checkout@v4
+        with:
+          repository: OffskyLab/apt
+          token: ${{ github.token }}
+          path: apt-repo
+
+      - name: Update APT repo
+        run: |
+          # Copy deb files to pool
+          cp artifacts/orbital-linux-x86_64/orbital_*_amd64.deb apt-repo/pool/main/o/orbital/
+          cp artifacts/orbital-linux-arm64/orbital_*_arm64.deb apt-repo/pool/main/o/orbital/
+
+          # Generate Packages files
+          cd apt-repo
+          dpkg-scanpackages --arch amd64 pool/ > dists/stable/main/binary-amd64/Packages
+          dpkg-scanpackages --arch arm64 pool/ > dists/stable/main/binary-arm64/Packages
+          gzip -kf dists/stable/main/binary-amd64/Packages
+          gzip -kf dists/stable/main/binary-arm64/Packages
+
+          # Generate Release file
+          cd dists/stable
+          cat > Release <<RELEASE
+          Origin: OffskyLab
+          Label: Orbital
+          Suite: stable
+          Codename: stable
+          Architectures: amd64 arm64
+          Components: main
+          Description: APT repository for Orbital
+          RELEASE
+          sed -i 's/^          //' Release
+
+          # Add checksums
+          apt-ftparchive release . >> Release
+
+      - name: Push APT repo
+        run: |
+          cd apt-repo
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet || git commit -m "[UPDATE] orbital $(echo ${GITHUB_REF#refs/tags/})"
+          git push
