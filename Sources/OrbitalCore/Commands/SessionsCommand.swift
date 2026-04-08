@@ -35,8 +35,8 @@ public struct SessionsCommand: ParsableCommand {
                 let msgs = "\(e.userCount) msgs"
                 let timeStr = e.lastTime.map { displayFormatter.string(from: $0) } ?? "?"
                 print("  \u{1B}[1m[\(idx)]\u{1B}[0m \(title)")
-                print("      \u{1B}[2m\(msgs) · \(timeStr)\u{1B}[0m")
                 print("      \u{1B}[2m\(e.id)\u{1B}[0m")
+                print("      \u{1B}[2m\(msgs) · \(timeStr)\u{1B}[0m")
                 if i < sorted.count - 1 { print("") }
             }
         }
