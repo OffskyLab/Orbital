@@ -12,4 +12,24 @@ public enum Tool: String, Codable, CaseIterable, Sendable {
     }
 
     public var subdirectory: String { rawValue }
+
+    /// npm install command, nil if setup not supported
+    public var installCommand: [String]? {
+        switch self {
+        case .claude: return ["npm", "install", "-g", "@anthropic-ai/claude-code"]
+        case .codex:  return ["npm", "install", "-g", "@openai/codex"]
+        case .gemini: return nil
+        }
+    }
+
+    /// Interactive auth command to run after installation, nil if not supported
+    public var authCommand: [String]? {
+        switch self {
+        case .claude: return ["claude", "auth", "login"]
+        case .codex:  return ["codex", "login"]
+        case .gemini: return nil
+        }
+    }
+
+    public var supportsSetup: Bool { authCommand != nil }
 }

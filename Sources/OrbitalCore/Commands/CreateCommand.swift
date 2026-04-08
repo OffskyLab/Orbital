@@ -49,6 +49,12 @@ public struct CreateCommand: ParsableCommand {
         print("Created environment: \(name)")
         if let clone { print("Cloned tools and env vars from: \(clone)") }
         if !tools.isEmpty { print("Tools: \(tools.map(\.rawValue).joined(separator: ", "))") }
+
+        // Setup each tool (install check + auth)
+        for t in tools {
+            let configDir = store.toolConfigDir(tool: t, environment: name)
+            try ToolSetup.setup(t, configDir: configDir)
+        }
     }
 
     static func runWizard() -> [Tool] {
