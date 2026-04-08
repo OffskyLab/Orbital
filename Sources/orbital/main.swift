@@ -1,0 +1,2 @@
+import OrbitalCore
+OrbitalCommand.main()
