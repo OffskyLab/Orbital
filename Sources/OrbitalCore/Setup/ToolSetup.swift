@@ -1,5 +1,9 @@
 import Foundation
+#if canImport(Darwin)
 import Darwin
+#else
+import Glibc
+#endif
 
 public struct ToolSetup {
 
@@ -28,18 +32,13 @@ public struct ToolSetup {
             try install(tool)
         }
 
-        // ── 2. Offer auth ───────────────────────────────────────────────
-        print("Log in to \(tool.rawValue) now? [Y/n] ", terminator: "")
-        fflush(stdout)
-        let authInput = readLine()?.lowercased().trimmingCharacters(in: .whitespaces) ?? ""
-        guard authInput.isEmpty || authInput == "y" || authInput == "yes" else {
-            if let cmd = tool.authCommand {
-                print("Skipping login. Run '\(cmd.joined(separator: " "))' later.")
-            }
-            return
+        // ── 2. Print login instructions ─────────────────────────────────
+        if let cmd = tool.authCommand {
+            print("")
+            print("To log in to \(tool.rawValue), run:")
+            print("  orbital use <your-env-name>")
+            print("  \(cmd.joined(separator: " "))")
         }
-
-        try authenticate(tool, configDir: configDir)
     }
 
     // MARK: - Internal
