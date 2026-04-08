@@ -16,19 +16,60 @@ public struct CreateCommand: ParsableCommand {
     @Option(name: .long, help: "Clone tools and env vars from an existing environment")
     public var clone: String?
 
+    @Option(name: .long, help: "Add a tool (claude, codex, gemini). Repeatable: --tool claude --tool codex")
+    public var tool: [String] = []
+
     public init() {}
 
     public func run() throws {
         let store = EnvironmentStore.default
-        try Self.createEnvironment(name: name, description: description, cloneFrom: clone, store: store)
+
+        // Resolve tools from --tool flags
+        let flaggedTools = try tool.map { raw -> Tool in
+            guard let t = Tool(rawValue: raw) else {
+                throw ValidationError("Unknown tool '\(raw)'. Valid tools: \(Tool.allCases.map(\.rawValue).joined(separator: ", "))")
+            }
+            return t
+        }
+
+        // Determine which tools to use
+        let tools: [Tool]
+        if !flaggedTools.isEmpty {
+            // --tool provided — skip wizard
+            tools = flaggedTools
+        } else if clone != nil {
+            // --clone provided — tools come from source, skip wizard
+            tools = []
+        } else {
+            // Interactive wizard
+            tools = Self.runWizard()
+        }
+
+        try Self.createEnvironment(name: name, description: description, cloneFrom: clone, tools: tools, store: store)
         print("Created environment: \(name)")
         if let clone { print("Cloned tools and env vars from: \(clone)") }
+        if !tools.isEmpty { print("Tools: \(tools.map(\.rawValue).joined(separator: ", "))") }
+    }
+
+    static func runWizard() -> [Tool] {
+        print("\nSelect tools to add (y/N):")
+        var selected: [Tool] = []
+        for t in Tool.allCases {
+            print("  \(t.rawValue): ", terminator: "")
+            fflush(stdout)
+            let input = readLine()?.lowercased().trimmingCharacters(in: .whitespaces) ?? ""
+            if input == "y" || input == "yes" {
+                selected.append(t)
+            }
+        }
+        return selected
     }
 
     public static func createEnvironment(
         name: String,
         description: String,
         cloneFrom source: String?,
+        tools: [Tool] = [],
         store: EnvironmentStore
     ) throws {
         var env = OrbitalEnvironment(name: name, description: description)
@@ -40,5 +81,10 @@ public struct CreateCommand: ParsableCommand {
         }
 
         try store.save(env)
+
+        // Add each tool (creates config subdirectory)
+        for t in tools {
+            try store.addTool(t, to: name)
+        }
     }
 }
