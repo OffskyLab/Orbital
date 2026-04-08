@@ -21,10 +21,24 @@ When you run `orbital use work`, a shell function intercepts the command, calls 
 ## Requirements
 
 - macOS 15+
-- Swift 6.0+ (for building from source)
 - zsh
 
 ## Installation
+
+### Install script (recommended)
+
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/OffskyLab/orbital/main/install.sh)"
+```
+
+Builds from source and installs to `/usr/local/bin`. Requires Swift (Xcode or Xcode Command Line Tools).
+
+### Homebrew tap
+
+```bash
+brew tap OffskyLab/orbital
+brew install orbital
+```
 
 ### Build from source
 
