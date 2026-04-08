@@ -1,8 +1,10 @@
 import Foundation
+// Uses flushStdout() from Platform/CStdio.swift
+// Terminal I/O uses platform imports from CStdio.swift
 #if canImport(Darwin)
 import Darwin
 #else
-import Glibc
+@preconcurrency import Glibc
 #endif
 
 public struct MultiSelect: Sendable {
@@ -68,18 +70,18 @@ public struct MultiSelect: Sendable {
                 print("    \(check) \(option)")
             }
         }
-        fflush(stdout)
+        flushStdout()
     }
 
     private func clearLines(_ count: Int) {
         for _ in 0..<count {
             print("\u{1B}[1A\u{1B}[2K", terminator: "")
         }
-        fflush(stdout)
+        flushStdout()
     }
 
-    private func hideCursor() { print("\u{1B}[?25l", terminator: ""); fflush(stdout) }
-    private func showCursor() { print("\u{1B}[?25h", terminator: ""); fflush(stdout) }
+    private func hideCursor() { print("\u{1B}[?25l", terminator: ""); flushStdout() }
+    private func showCursor() { print("\u{1B}[?25h", terminator: ""); flushStdout() }
 
     private enum Key { case up, down, space, enter, ctrlC, other }
 

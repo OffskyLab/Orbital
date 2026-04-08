@@ -13,7 +13,7 @@ public struct UseCommand: ParsableCommand {
     public init() {}
 
     public func run() throws {
-        fputs(L10n.Use.needsShellIntegration, stderr)
+        writeStderr(L10n.Use.needsShellIntegration)
         throw ExitCode.failure
     }
 }

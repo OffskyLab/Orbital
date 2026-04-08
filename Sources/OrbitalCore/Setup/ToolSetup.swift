@@ -1,9 +1,5 @@
 import Foundation
-#if canImport(Darwin)
-import Darwin
-#else
-import Glibc
-#endif
+// Uses flushStdout() from Platform/CStdio.swift
 
 public struct ToolSetup {
 
@@ -21,7 +17,7 @@ public struct ToolSetup {
         if !isInstalled(tool) {
             print(L10n.ToolSetup.notInstalled(tool.rawValue))
             print(L10n.ToolSetup.installNow, terminator: "")
-            fflush(stdout)
+            flushStdout()
             let input = readLine()?.lowercased().trimmingCharacters(in: .whitespaces) ?? ""
             guard input.isEmpty || input == "y" || input == "yes" else {
                 print(L10n.ToolSetup.skipping(tool.rawValue))
@@ -49,7 +45,7 @@ public struct ToolSetup {
 
         enterAlternateScreen()
         print(L10n.ToolSetup.installing(tool.rawValue, cmd.joined(separator: " ")))
-        fflush(stdout)
+        flushStdout()
 
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/usr/bin/env")
@@ -69,11 +65,11 @@ public struct ToolSetup {
 
     private static func enterAlternateScreen() {
         print("\u{1B}[?1049h", terminator: "")
-        fflush(stdout)
+        flushStdout()
     }
 
     private static func exitAlternateScreen() {
         print("\u{1B}[?1049l", terminator: "")
-        fflush(stdout)
+        flushStdout()
     }
 }
