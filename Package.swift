@@ -3,7 +3,7 @@ import PackageDescription
 
 let package = Package(
     name: "orbital",
-    platforms: [.macOS(.v15)],
+    platforms: [.macOS(.v13)],
     products: [
         .executable(name: "orbital", targets: ["orbital"]),
         .library(name: "OrbitalCore", targets: ["OrbitalCore"]),
