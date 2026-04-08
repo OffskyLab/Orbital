@@ -6,19 +6,21 @@
 
 [繁體中文](docs/README-zh_TW.md)
 
-Per-shell environment manager for AI CLI tools — isolate accounts for Claude Code, Codex CLI, and Gemini CLI across work and personal contexts.
+Per-shell environment manager for AI CLI tools — isolate accounts for Claude Code, Codex CLI, and Gemini CLI across work and personal contexts, **while keeping your conversations continuous across account switches**.
 
 ## The Problem
 
-AI CLI tools like Claude Code, Codex, and Gemini store their config (API keys, auth tokens, settings) in a single global directory. If you have a work account and a personal account, switching between them means manually swapping credentials or keeping two separate machines. `orbital` solves this by giving each context its own isolated config directory, activated per shell session.
+AI CLI tools like Claude Code, Codex, and Gemini store their config (API keys, auth tokens, settings) in a single global directory. If you have a work account and a personal account, switching between them means manually swapping credentials or keeping two separate machines.
 
-## How It Works
+Worse, switching accounts usually means **losing your conversation history**. You're mid-task with Claude, switch to a different account, and your session is gone — you have to start over and re-explain all the context.
 
-`orbital` manages named environments stored under `~/.orbital/envs/<name>/`. Each environment has:
-- A list of tools (`claude`, `codex`, `gemini`) with isolated config subdirectories
-- Custom environment variables (API keys, etc.)
+## How orbital Solves This
 
-When you run `orbital use work`, a shell function intercepts the command, calls the `orbital _export work` internal command, and `eval`s the output — setting `CLAUDE_CONFIG_DIR`, `CODEX_CONFIG_DIR`, etc. in the current shell session only. Other terminal windows are unaffected.
+`orbital` manages named environments stored under `~/.orbital/envs/`. Each environment has its own isolated auth credentials, while **session data is shared by default** — so you can switch accounts and pick up exactly where you left off.
+
+- **Auth isolation**: each environment gets its own config directory per tool, so credentials never leak between accounts
+- **Session sharing**: conversation history, project context, and session data are symlinked to a shared location (`~/.orbital/shared/`), so `claude --resume` works seamlessly after switching environments
+- **Per-shell activation**: `orbital use work` only affects the current terminal — other windows keep their own environment
 
 ## Requirements
 
@@ -63,7 +65,7 @@ This writes `eval "$(orbital setup)"` to your shell rc file (`~/.zshrc` or `~/.b
 ## Quick Start
 
 ```bash
-# Create environments
+# Create environments (sessions are shared by default)
 orbital create work --description "Work account"
 orbital create personal --description "Personal account"
 
@@ -75,13 +77,33 @@ orbital tools -e personal
 orbital set env ANTHROPIC_API_KEY sk-ant-work123 -e work
 orbital set env ANTHROPIC_API_KEY sk-ant-personal456 -e personal
 
-# Switch environments (requires shell integration)
+# Switch environments — your session history carries over
 orbital use work
+claude                    # start a conversation
 orbital use personal
+claude --resume           # pick up right where you left off
 
 # Deactivate (clear all orbital env vars)
 orbital deactivate
 ```
+
+## Session Sharing
+
+By default, session data (conversation history, project context) is shared across all environments. This means:
+
+- Switch from `work` to `personal` → your Claude conversations are still there
+- Use `claude --resume` after switching → continues the exact same session
+- Each environment still has its own **isolated auth credentials**
+
+Session sharing works by symlinking tool-specific session directories (`projects/`, `sessions/`, `session-env/`) to a shared location under `~/.orbital/shared/`.
+
+If you need fully isolated sessions (e.g., for compliance reasons), you can opt out per environment:
+
+```bash
+orbital create secure-env --isolate-sessions
+```
+
+The interactive wizard also asks about session sharing when creating an environment.
 
 ## Commands
 
@@ -89,17 +111,18 @@ orbital deactivate
 
 | Command | Description |
 |---|---|
-| `orbital create <name>` | Create a new environment |
+| `orbital create <name>` | Create a new environment (sessions shared by default) |
 | `orbital create <name> --clone <source>` | Clone tools and env vars from an existing environment |
-| `orbital create <name> --isolate-sessions` | Create with isolated sessions (default: shared) |
+| `orbital create <name> --isolate-sessions` | Create with fully isolated sessions |
 | `orbital delete <name>` | Delete an environment (prompts for confirmation) |
 | `orbital delete <name> --force` | Delete without confirmation |
+| `orbital rename <old> <new>` | Rename an environment |
 | `orbital list` | List all environments (`*` marks the active one) |
 | `orbital info [name]` | Show full details of an environment (defaults to active) |
 
 ### Switching
 
-> Requires shell integration (`orbital setup`)
+> Requires shell integration (`eval "$(orbital setup)"`)
 
 | Command | Description |
 |---|---|
@@ -127,24 +150,32 @@ orbital deactivate
 
 ## Storage
 
-Environments are stored as directories under `$ORBITAL_HOME` (default: `~/.orbital`):
+Environments are stored under `$ORBITAL_HOME` (default: `~/.orbital`):
 
 ```
 ~/.orbital/
-  current              # name of the last activated environment
+  current                # name of the last activated environment
+  shared/                # shared session data across environments
+    claude/
+      projects/          # conversation history per project
+      sessions/          # session metadata
+      session-env/       # session environment snapshots
   envs/
-    work/
-      env.json         # metadata: tools, env vars, timestamps
-      claude/          # CLAUDE_CONFIG_DIR points here
-      codex/           # CODEX_CONFIG_DIR points here
-    personal/
+    <UUID>/
+      env.json           # metadata: tools, env vars, timestamps
+      claude/            # CLAUDE_CONFIG_DIR points here
+        .claude.json     # auth credentials (isolated per env)
+        projects/  -> ~/.orbital/shared/claude/projects   (symlink)
+        sessions/  -> ~/.orbital/shared/claude/sessions   (symlink)
+      codex/             # CODEX_CONFIG_DIR points here
+    <UUID>/
       env.json
       claude/
 ```
 
 Set `ORBITAL_HOME` to use a custom location.
 
-## Environment Variables Set by orbital use
+## Environment Variables Set by `orbital use`
 
 | Tool | Variable |
 |---|---|
@@ -153,6 +184,10 @@ Set `ORBITAL_HOME` to use a custom location.
 | `gemini` | `GEMINI_CONFIG_DIR` |
 
 Custom env vars set with `orbital set env` are also exported on `orbital use`.
+
+## Localization
+
+orbital auto-detects your system locale (`LC_ALL`, `LC_MESSAGES`, `LANG`) and displays messages in Traditional Chinese (`zh_TW`) or English.
 
 ## License
 

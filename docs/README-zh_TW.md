@@ -4,19 +4,21 @@
   <img src="../assets/icon-1024x1024.png" alt="orbital" width="256" height="256" />
 </p>
 
-Per-shell 環境管理工具，為 AI CLI 工具（Claude Code、Codex CLI、Gemini CLI）隔離帳號，輕鬆切換工作與個人情境。
+Per-shell 環境管理工具，為 AI CLI 工具（Claude Code、Codex CLI、Gemini CLI）隔離帳號，輕鬆切換工作與個人情境，**同時保留跨帳號的對話連續性**。
 
 ## 問題
 
-Claude Code、Codex、Gemini 等 AI CLI 工具，會將設定（API 金鑰、認證 token、偏好設定）存放在單一全域目錄。如果你同時有工作帳號與個人帳號，切換時就得手動搬移憑證，或者乾脆準備兩台電腦。`orbital` 讓每個情境都有自己獨立的設定目錄，只在當前 shell 生效。
+Claude Code、Codex、Gemini 等 AI CLI 工具，會將設定（API 金鑰、認證 token、偏好設定）存放在單一全域目錄。如果你同時有工作帳號與個人帳號，切換時就得手動搬移憑證，或者乾脆準備兩台電腦。
 
-## 運作方式
+更麻煩的是，切換帳號通常意味著**對話歷史全部消失**。你正在用 Claude 處理任務，切到另一個帳號，session 就斷了 — 只能重頭開始、重新解釋所有上下文。
 
-`orbital` 管理存放在 `~/.orbital/envs/<name>/` 下的命名環境，每個環境包含：
-- 一組工具（`claude`、`codex`、`gemini`）及其獨立的設定子目錄
-- 自訂環境變數（API 金鑰等）
+## orbital 如何解決
 
-執行 `orbital use work` 時，shell function 會攔截指令、呼叫內部指令 `orbital _export work`，然後 `eval` 輸出結果 — 僅在當前 shell 設定 `CLAUDE_CONFIG_DIR`、`CODEX_CONFIG_DIR` 等變數。其他終端機視窗不受影響。
+`orbital` 管理存放在 `~/.orbital/envs/` 下的命名環境。每個環境有自己獨立的認證憑證，但**預設共享 session 資料** — 讓你切換帳號後能直接接續對話。
+
+- **認證隔離**：每個環境的每個工具都有獨立的設定目錄，憑證不會互相干擾
+- **Session 共享**：對話歷史、專案上下文、session 資料透過 symlink 指向共享位置（`~/.orbital/shared/`），切換環境後 `claude --resume` 無縫接續
+- **Per-shell 生效**：`orbital use work` 只影響當前終端機 — 其他視窗維持各自的環境
 
 ## 系統需求
 
@@ -61,7 +63,7 @@ eval "$(orbital setup)"
 ## 快速開始
 
 ```bash
-# 建立環境
+# 建立環境（預設共享 session）
 orbital create work --description "工作帳號"
 orbital create personal --description "個人帳號"
 
@@ -73,9 +75,11 @@ orbital tools -e personal
 orbital set env ANTHROPIC_API_KEY sk-ant-work123 -e work
 orbital set env ANTHROPIC_API_KEY sk-ant-personal456 -e personal
 
-# 切換環境（需要 shell 整合）
+# 切換環境 — 對話歷史會自動保留
 orbital use work
+claude                    # 開始對話
 orbital use personal
+claude --resume           # 無縫接續同一個 session
 
 # 停用（清除所有 orbital 環境變數）
 orbital deactivate
@@ -87,11 +91,12 @@ orbital deactivate
 
 | 指令 | 說明 |
 |---|---|
-| `orbital create <name>` | 建立新環境 |
+| `orbital create <name>` | 建立新環境（預設共享 session） |
 | `orbital create <name> --clone <source>` | 從現有環境複製工具與環境變數 |
-| `orbital create <name> --isolate-sessions` | 建立環境並隔離 session（預設為共享） |
+| `orbital create <name> --isolate-sessions` | 建立環境並完全隔離 session |
 | `orbital delete <name>` | 刪除環境（會要求確認） |
 | `orbital delete <name> --force` | 不確認直接刪除 |
+| `orbital rename <old> <new>` | 重新命名環境 |
 | `orbital list` | 列出所有環境（`*` 標示目前啟用的） |
 | `orbital info [name]` | 顯示環境的詳細資訊（預設為目前啟用的環境） |
 
@@ -135,19 +140,20 @@ orbital deactivate
 
 ```
 ~/.orbital/
-  current              # 上次啟用的環境名稱
-  shared/              # 共享的 session 資料
+  current                # 上次啟用的環境名稱
+  shared/                # 跨環境共享的 session 資料
     claude/
-      projects/
-      sessions/
-      session-env/
+      projects/          # 各專案的對話歷史
+      sessions/          # session 中繼資料
+      session-env/       # session 環境快照
   envs/
     <UUID>/
-      env.json         # 中繼資料：工具、環境變數、時間戳
-      claude/          # CLAUDE_CONFIG_DIR 指向此處
-        projects -> ~/.orbital/shared/claude/projects
-        sessions -> ~/.orbital/shared/claude/sessions
-      codex/           # CODEX_CONFIG_DIR 指向此處
+      env.json           # 中繼資料：工具、環境變數、時間戳
+      claude/            # CLAUDE_CONFIG_DIR 指向此處
+        .claude.json     # 認證憑證（各環境獨立）
+        projects/  -> ~/.orbital/shared/claude/projects   (symlink)
+        sessions/  -> ~/.orbital/shared/claude/sessions   (symlink)
+      codex/             # CODEX_CONFIG_DIR 指向此處
     <UUID>/
       env.json
       claude/
