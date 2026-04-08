@@ -24,6 +24,8 @@ public struct AddToolCommand: ParsableCommand {
             let store = EnvironmentStore.default
             try AddToolCommand.addTool(t, to: envName, store: store)
             print("Added tool '\(tool)' to environment '\(envName)'")
+            let configDir = store.toolConfigDir(tool: t, environment: envName)
+            try ToolSetup.setup(t, configDir: configDir)
         }
     }
 
