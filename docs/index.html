@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>orbital — AI CLI environment manager</title>
-  <meta name="description" content="Per-shell environment manager for AI CLI tools. Isolate accounts for Claude Code, Codex, and Gemini CLI across work and personal contexts." />
+  <meta name="description" content="Per-shell environment manager for AI CLI tools. Isolate accounts for Claude Code, Codex, and Gemini CLI — keep your conversations continuous across account switches." />
   <link rel="icon" href="icon.png" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -118,7 +118,7 @@
     .hero p {
       font-size: 1.15rem;
       color: var(--muted);
-      max-width: 540px;
+      max-width: 580px;
       margin: 0 auto 2.5rem;
     }
 
@@ -184,6 +184,24 @@
     }
 
     .code-block .prompt { color: var(--muted); user-select: none; }
+
+    .copy-btn {
+      position: absolute;
+      top: .5rem;
+      right: .5rem;
+      background: var(--border);
+      color: var(--muted);
+      border: none;
+      border-radius: 6px;
+      padding: .3rem .6rem;
+      font-size: .7rem;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      cursor: pointer;
+      transition: background .15s, color .15s;
+    }
+
+    .copy-btn:hover { background: var(--accent); color: #fff; }
+    .copy-btn.copied { background: var(--accent2); color: var(--bg); }
 
     /* ── Features ── */
     .section {
@@ -366,9 +384,9 @@
 <!-- Hero -->
 <section class="hero">
   <img class="hero-logo" src="icon.png" alt="orbital" />
-  <div class="badge">v0.1.2</div>
+  <div class="badge">v0.1.4</div>
   <h1>Manage AI CLI environments, per shell</h1>
-  <p>Isolate accounts for Claude Code, Codex, and Gemini CLI across work and personal contexts — no config collisions, no manual swapping.</p>
+  <p>Isolate accounts for Claude Code, Codex, and Gemini CLI across work and personal contexts — switch accounts freely while keeping your conversations continuous.</p>
   <div class="cta-group">
     <a class="btn btn-primary" href="#install">Get Started</a>
     <a class="btn btn-secondary" href="https://github.com/OffskyLab/orbital">View on GitHub</a>
@@ -378,10 +396,15 @@
 <!-- Install -->
 <div class="install-block" id="install">
   <div class="install-label">Install via Homebrew</div>
-  <div class="code-block">
-    <span class="prompt">$ </span>brew tap OffskyLab/orbital<br/>
-    <span class="prompt">$ </span>brew install orbital<br/>
-    <span class="prompt">$ </span>orbital setup
+  <div class="code-block" id="install-brew">
+    <button class="copy-btn" onclick="copyCode('install-brew')">Copy</button>
+    <span class="prompt">$ </span>brew install OffskyLab/orbital/orbital
+  </div>
+  <div style="height:.75rem"></div>
+  <div class="install-label">Activate shell integration</div>
+  <div class="code-block" id="install-setup">
+    <button class="copy-btn" onclick="copyCode('install-setup')">Copy</button>
+    <span class="prompt">$ </span>eval "$(orbital setup)"
   </div>
 </div>
 
@@ -391,8 +414,13 @@
   <div class="features-grid">
     <div class="feature-card">
       <span class="feature-icon">🔒</span>
-      <h3>Isolated config dirs</h3>
-      <p>Each environment gets its own <code>CLAUDE_CONFIG_DIR</code>, <code>CODEX_CONFIG_DIR</code>, and <code>GEMINI_CONFIG_DIR</code> — completely separate auth tokens and settings.</p>
+      <h3>Isolated credentials</h3>
+      <p>Each environment gets its own <code>CLAUDE_CONFIG_DIR</code>, <code>CODEX_CONFIG_DIR</code>, and <code>GEMINI_CONFIG_DIR</code> — auth tokens never leak between accounts.</p>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">💬</span>
+      <h3>Shared sessions</h3>
+      <p>Switch accounts and pick up where you left off. Session data is shared by default — <code>claude --resume</code> works seamlessly after switching environments.</p>
     </div>
     <div class="feature-card">
       <span class="feature-icon">🐚</span>
@@ -412,12 +440,7 @@
     <div class="feature-card">
       <span class="feature-icon">⚡</span>
       <h3>Zero runtime overhead</h3>
-      <p>Built in Swift — native binary, instant startup. Shell integration is a tiny eval'd function, not a daemon.</p>
-    </div>
-    <div class="feature-card">
-      <span class="feature-icon">📦</span>
-      <h3>Homebrew tap</h3>
-      <p>Install with a single <code>brew install</code>. Updates are as easy as <code>brew upgrade</code>.</p>
+      <p>Built in Swift — native binary, instant startup. Shell integration is a tiny eval'd function, not a daemon. Supports bash and zsh.</p>
     </div>
   </div>
 </section>
@@ -430,28 +453,28 @@
       <div class="step-num">1</div>
       <div class="step-body">
         <h4>Install shell integration</h4>
-        <p>Run <code>orbital setup</code> once. It appends <code>eval "$(orbital init)"</code> to your <code>~/.zshrc</code>, adding the <code>use</code> and <code>deactivate</code> shell functions.</p>
+        <p>Run <code>eval "$(orbital setup)"</code> once. It adds shell functions to your rc file (<code>~/.zshrc</code> or <code>~/.bashrc</code>, auto-detected) and activates immediately.</p>
       </div>
     </div>
     <div class="step">
       <div class="step-num">2</div>
       <div class="step-body">
         <h4>Create environments</h4>
-        <p>Run <code>orbital create work</code>. An interactive multi-select lets you pick which AI tools to include. Environments are stored under <code>~/.orbital/envs/</code>.</p>
+        <p>Run <code>orbital create work</code>. An interactive wizard lets you pick tools and configure session sharing. Environments are stored under <code>~/.orbital/envs/</code>.</p>
       </div>
     </div>
     <div class="step">
       <div class="step-num">3</div>
       <div class="step-body">
         <h4>Switch with one command</h4>
-        <p><code>orbital use work</code> is intercepted by the shell function, which exports the right config dirs and custom env vars into your current session only.</p>
+        <p><code>orbital use work</code> exports the right config dirs and custom env vars into your current session. Your conversation history stays intact across switches.</p>
       </div>
     </div>
     <div class="step">
       <div class="step-num">4</div>
       <div class="step-body">
-        <h4>Run your AI tools normally</h4>
-        <p>Claude Code, Codex, and Gemini CLI automatically pick up the isolated config dirs. Log in to each tool inside the environment once, and you're done.</p>
+        <h4>Resume where you left off</h4>
+        <p>After switching accounts, <code>claude --resume</code> picks up your last session. Auth is isolated, but sessions are shared — the best of both worlds.</p>
       </div>
     </div>
   </div>
@@ -506,6 +529,25 @@
     <a href="https://github.com/OffskyLab/orbital/releases">Releases</a>
   </p>
 </footer>
+
+<script>
+function copyCode(id) {
+  const block = document.getElementById(id);
+  const text = block.textContent
+    .replace(/^Copy/, '')
+    .replace(/^\$\s*/gm, '')
+    .trim();
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = block.querySelector('.copy-btn');
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = 'Copy';
+      btn.classList.remove('copied');
+    }, 1500);
+  });
+}
+</script>
 
 </body>
 </html>
