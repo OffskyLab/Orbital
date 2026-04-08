@@ -78,8 +78,6 @@ public struct ToolSetup {
     static func authenticate(_ tool: Tool, configDir: URL) throws {
         guard let cmd = tool.authCommand else { return }
 
-        enterAlternateScreen()
-
         var env = ProcessInfo.processInfo.environment
         env[tool.envVarName] = configDir.path
 
@@ -90,7 +88,6 @@ public struct ToolSetup {
         try process.run()
         process.waitUntilExit()
 
-        exitAlternateScreen()
         print("✓ \(tool.rawValue) login complete")
     }
 
