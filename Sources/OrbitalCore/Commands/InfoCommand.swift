@@ -4,10 +4,10 @@ import Foundation
 public struct InfoCommand: ParsableCommand {
     public static let configuration = CommandConfiguration(
         commandName: "info",
-        abstract: "Show details of an orbital environment"
+        abstract: L10n.Info.abstract
     )
 
-    @Argument(help: "Environment name (defaults to active environment)")
+    @Argument(help: ArgumentHelp(L10n.Info.nameHelp))
     public var name: String?
 
     public init() {}
@@ -20,7 +20,7 @@ public struct InfoCommand: ParsableCommand {
         } else if let active = ProcessInfo.processInfo.environment["ORBITAL_ACTIVE_ENV"] {
             resolvedName = active
         } else {
-            throw ValidationError("No active environment. Specify a name or run 'orbital use <name>' first.")
+            throw ValidationError(L10n.Info.noActive)
         }
         let env = try store.load(named: resolvedName)
         let df = DateFormatter()
@@ -28,18 +28,19 @@ public struct InfoCommand: ParsableCommand {
         df.timeStyle = .medium
 
         let path = try store.envDir(for: resolvedName).path
+        let none = L10n.Info.none
 
-        print("Name:        \(env.name)")
-        print("ID:          \(env.id)")
-        print("Path:        \(path)")
-        print("Description: \(env.description.isEmpty ? "(none)" : env.description)")
-        print("Created:     \(df.string(from: env.createdAt))")
-        print("Last Used:   \(df.string(from: env.lastUsed))")
-        print("Tools:       \(env.tools.isEmpty ? "(none)" : env.tools.map(\.rawValue).joined(separator: ", "))")
+        print("\(L10n.Info.labelName)\(env.name)")
+        print("\(L10n.Info.labelID)\(env.id)")
+        print("\(L10n.Info.labelPath)\(path)")
+        print("\(L10n.Info.labelDescription)\(env.description.isEmpty ? none : env.description)")
+        print("\(L10n.Info.labelCreated)\(df.string(from: env.createdAt))")
+        print("\(L10n.Info.labelLastUsed)\(df.string(from: env.lastUsed))")
+        print("\(L10n.Info.labelTools)\(env.tools.isEmpty ? none : env.tools.map(\.rawValue).joined(separator: ", "))")
         if env.env.isEmpty {
-            print("Env Vars:    (none)")
+            print("\(L10n.Info.labelEnvVars)\(none)")
         } else {
-            print("Env Vars:")
+            print("\(L10n.Info.labelEnvVars)")
             for (key, value) in env.env.sorted(by: { $0.key < $1.key }) {
                 let masked = value.count > 8 ? String(value.prefix(4)) + "****" : "****"
                 print("  \(key)=\(masked)")

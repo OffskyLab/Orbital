@@ -4,7 +4,7 @@ import Foundation
 public struct CurrentCommand: ParsableCommand {
     public static let configuration = CommandConfiguration(
         commandName: "current",
-        abstract: "Print the name of the active environment"
+        abstract: L10n.Current.abstract
     )
     public init() {}
 
@@ -12,7 +12,7 @@ public struct CurrentCommand: ParsableCommand {
         if let active = ProcessInfo.processInfo.environment["ORBITAL_ACTIVE_ENV"] {
             print(active)
         } else {
-            print("(no active environment)")
+            print(L10n.Current.noActive)
         }
     }
 }

@@ -4,17 +4,17 @@ import Foundation
 public struct ToolsCommand: ParsableCommand {
     public static let configuration = CommandConfiguration(
         commandName: "tools",
-        abstract: "Manage tools for an environment (interactive multi-select)"
+        abstract: L10n.Tools.abstract
     )
 
-    @Option(name: .shortAndLong, help: "Environment name (defaults to active environment)")
+    @Option(name: .shortAndLong, help: ArgumentHelp(L10n.Tools.envHelp))
     public var environment: String?
 
     public init() {}
 
     public func run() throws {
         guard let envName = environment ?? ProcessInfo.processInfo.environment["ORBITAL_ACTIVE_ENV"] else {
-            throw ValidationError("No active environment. Run 'orbital use <name>' first, or use -e <name>.")
+            throw ValidationError(L10n.Tools.noActive)
         }
 
         let store = EnvironmentStore.default
@@ -28,7 +28,7 @@ public struct ToolsCommand: ParsableCommand {
         }
 
         let selector = MultiSelect(
-            title: "Select tools for '\(envName)' (↑↓ move, space toggle, enter confirm):",
+            title: L10n.Tools.wizardTitle(envName),
             options: allTools.map(\.rawValue),
             selected: preSelected
         )
@@ -41,17 +41,17 @@ public struct ToolsCommand: ParsableCommand {
 
         for tool in toRemove {
             try store.removeTool(tool, from: envName)
-            print("Removed \(tool.rawValue)")
+            print(L10n.Tools.removed(tool.rawValue))
         }
         for tool in toAdd {
             try store.addTool(tool, to: envName)
-            print("Added \(tool.rawValue)")
+            print(L10n.Tools.added(tool.rawValue))
             let configDir = store.toolConfigDir(tool: tool, environment: envName)
             try ToolSetup.setup(tool, configDir: configDir, envName: envName)
         }
 
         if toAdd.isEmpty && toRemove.isEmpty {
-            print("No changes.")
+            print(L10n.Tools.noChanges)
         }
     }
 }

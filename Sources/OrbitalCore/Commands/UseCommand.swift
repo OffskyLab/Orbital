@@ -4,17 +4,16 @@ import Foundation
 public struct UseCommand: ParsableCommand {
     public static let configuration = CommandConfiguration(
         commandName: "use",
-        abstract: "Activate an environment in the current shell"
+        abstract: L10n.Use.abstract
     )
 
-    @Argument(help: "Environment name")
+    @Argument(help: ArgumentHelp(L10n.Use.nameHelp))
     public var name: String
 
     public init() {}
 
     public func run() throws {
-        fputs("error: 'orbital use' requires shell integration.\n", stderr)
-        fputs("Run 'orbital setup' to install it, then restart your terminal.\n", stderr)
+        fputs(L10n.Use.needsShellIntegration, stderr)
         throw ExitCode.failure
     }
 }

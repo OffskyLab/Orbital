@@ -3,7 +3,7 @@ import ArgumentParser
 public struct UnexportCommand: ParsableCommand {
     public static let configuration = CommandConfiguration(
         commandName: "_unexport",
-        abstract: "Internal: print unset lines for a named environment (called by shell function)",
+        abstract: L10n.Unexport.abstract,
         shouldDisplay: false
     )
 

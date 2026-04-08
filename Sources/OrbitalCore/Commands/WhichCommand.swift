@@ -4,20 +4,20 @@ import Foundation
 public struct WhichCommand: ParsableCommand {
     public static let configuration = CommandConfiguration(
         commandName: "which",
-        abstract: "Print the config directory path for a tool in the active environment"
+        abstract: L10n.Which.abstract
     )
 
-    @Argument(help: "Tool name: claude, codex, or gemini")
+    @Argument(help: ArgumentHelp(L10n.Which.toolHelp))
     public var tool: String
 
     public init() {}
 
     public func run() throws {
         guard let t = Tool(rawValue: tool) else {
-            throw ValidationError("Unknown tool '\(tool)'. Valid tools: claude, codex, gemini")
+            throw ValidationError(L10n.Which.unknownTool(tool))
         }
         guard let envName = ProcessInfo.processInfo.environment["ORBITAL_ACTIVE_ENV"] else {
-            throw ValidationError("No active environment. Run 'orbital use <name>' first.")
+            throw ValidationError(L10n.Which.noActive)
         }
         let store = EnvironmentStore.default
         let path = store.toolConfigDir(tool: t, environment: envName).path

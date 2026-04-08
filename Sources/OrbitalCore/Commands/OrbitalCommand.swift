@@ -3,7 +3,7 @@ import ArgumentParser
 public struct OrbitalCommand: ParsableCommand {
     public static let configuration = CommandConfiguration(
         commandName: "orbital",
-        abstract: "AI CLI environment manager — manage accounts for Claude, Codex, Gemini",
+        abstract: L10n.Orbital.abstract,
         version: "0.1.3",
         subcommands: [
             SetupCommand.self,

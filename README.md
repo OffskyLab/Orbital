@@ -4,6 +4,8 @@
   <img src="assets/icon-1024x1024.png" alt="orbital" width="256" height="256" />
 </p>
 
+[繁體中文](docs/README-zh_TW.md)
+
 Per-shell environment manager for AI CLI tools — isolate accounts for Claude Code, Codex CLI, and Gemini CLI across work and personal contexts.
 
 ## The Problem
@@ -20,8 +22,8 @@ When you run `orbital use work`, a shell function intercepts the command, calls 
 
 ## Requirements
 
-- macOS 13+
-- zsh
+- macOS 13+ or Linux
+- bash or zsh
 
 ## Installation
 
@@ -33,11 +35,10 @@ When you run `orbital use work`, a shell function intercepts the command, calls 
 
 Builds from source and installs to `/usr/local/bin`. Requires Swift (Xcode or Xcode Command Line Tools).
 
-### Homebrew tap
+### Homebrew
 
 ```bash
-brew tap OffskyLab/orbital
-brew install orbital
+brew install OffskyLab/orbital/orbital
 ```
 
 ### Build from source
@@ -54,10 +55,10 @@ cp .build/release/orbital /usr/local/bin/orbital
 Run once after installation:
 
 ```bash
-orbital setup
+eval "$(orbital setup)"
 ```
 
-This appends `eval "$(orbital init)"` to `~/.zshrc`. Restart your terminal or run `source ~/.zshrc`.
+This writes `eval "$(orbital setup)"` to your shell rc file (`~/.zshrc` or `~/.bashrc`, auto-detected) and activates it in the current shell immediately.
 
 ## Quick Start
 
@@ -90,6 +91,7 @@ orbital deactivate
 |---|---|
 | `orbital create <name>` | Create a new environment |
 | `orbital create <name> --clone <source>` | Clone tools and env vars from an existing environment |
+| `orbital create <name> --isolate-sessions` | Create with isolated sessions (default: shared) |
 | `orbital delete <name>` | Delete an environment (prompts for confirmation) |
 | `orbital delete <name> --force` | Delete without confirmation |
 | `orbital list` | List all environments (`*` marks the active one) |
@@ -120,7 +122,7 @@ orbital deactivate
 
 | Command | Description |
 |---|---|
-| `orbital setup` | Install shell integration into `~/.zshrc` (idempotent) |
+| `orbital setup` | Install shell integration into shell rc file (idempotent) |
 | `orbital init` | Print the shell integration script (for manual setup) |
 
 ## Storage

@@ -4,7 +4,7 @@ import Foundation
 public struct ExportCommand: ParsableCommand {
     public static let configuration = CommandConfiguration(
         commandName: "_export",
-        abstract: "Internal: print export lines for a named environment (called by shell function)",
+        abstract: L10n.Export.abstract,
         shouldDisplay: false
     )
 

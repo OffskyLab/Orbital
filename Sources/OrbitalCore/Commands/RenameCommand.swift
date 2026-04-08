@@ -4,13 +4,13 @@ import Foundation
 public struct RenameCommand: ParsableCommand {
     public static let configuration = CommandConfiguration(
         commandName: "rename",
-        abstract: "Rename an orbital environment"
+        abstract: L10n.Rename.abstract
     )
 
-    @Argument(help: "Current environment name")
+    @Argument(help: ArgumentHelp(L10n.Rename.nameHelp))
     public var name: String
 
-    @Argument(help: "New environment name")
+    @Argument(help: ArgumentHelp(L10n.Rename.newNameHelp))
     public var newName: String
 
     public init() {}
@@ -18,7 +18,7 @@ public struct RenameCommand: ParsableCommand {
     public func run() throws {
         let store = EnvironmentStore.default
         try Self.renameEnvironment(from: name, to: newName, store: store)
-        print("Renamed environment '\(name)' to '\(newName)'")
+        print(L10n.Rename.renamed(name, newName))
     }
 
     public static func renameEnvironment(from oldName: String, to newName: String, store: EnvironmentStore) throws {

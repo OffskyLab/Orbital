@@ -21,12 +21,12 @@ public struct ToolSetup {
 
         // ── 1. Check & install ──────────────────────────────────────────
         if !isInstalled(tool) {
-            print("\(tool.rawValue) is not installed.")
-            print("Install it now? [Y/n] ", terminator: "")
+            print(L10n.ToolSetup.notInstalled(tool.rawValue))
+            print(L10n.ToolSetup.installNow, terminator: "")
             fflush(stdout)
             let input = readLine()?.lowercased().trimmingCharacters(in: .whitespaces) ?? ""
             guard input.isEmpty || input == "y" || input == "yes" else {
-                print("Skipping \(tool.rawValue) setup.\n")
+                print(L10n.ToolSetup.skipping(tool.rawValue))
                 return
             }
             try install(tool)
@@ -34,10 +34,7 @@ public struct ToolSetup {
 
         // ── 2. Print login instructions ─────────────────────────────────
         if let cmd = tool.authCommand {
-            print("")
-            print("To log in to \(tool.rawValue), run:")
-            print("  orbital use \(envName)")
-            print("  \(cmd.joined(separator: " "))")
+            print(L10n.ToolSetup.loginInstructions(tool.rawValue, envName, cmd.joined(separator: " ")))
         }
     }
 
@@ -58,7 +55,7 @@ public struct ToolSetup {
         guard let cmd = tool.installCommand else { return }
 
         enterAlternateScreen()
-        print("Installing \(tool.rawValue) (\(cmd.joined(separator: " ")))...\n")
+        print(L10n.ToolSetup.installing(tool.rawValue, cmd.joined(separator: " ")))
         fflush(stdout)
 
         let process = Process()
@@ -72,14 +69,14 @@ public struct ToolSetup {
         guard process.terminationStatus == 0 else {
             throw SetupError.installFailed(tool.rawValue)
         }
-        print("✓ \(tool.rawValue) installed")
+        print(L10n.ToolSetup.installed(tool.rawValue))
     }
 
     static func authenticate(_ tool: Tool, configDir: URL) throws {
         guard let cmd = tool.authCommand else { return }
 
-        print("Running: \(cmd.joined(separator: " "))")
-        print("(credentials will be stored in: \(configDir.path))")
+        print(L10n.ToolSetup.running(cmd.joined(separator: " ")))
+        print(L10n.ToolSetup.credentialsPath(configDir.path))
         fflush(stdout)
 
         // Set env var in current process so child inherits the full environment naturally.
@@ -98,10 +95,9 @@ public struct ToolSetup {
         process.waitUntilExit()
 
         if process.terminationStatus == 0 {
-            print("✓ \(tool.rawValue) login complete")
+            print(L10n.ToolSetup.loginComplete(tool.rawValue))
         } else {
-            print("⚠ \(tool.rawValue) login exited with code \(process.terminationStatus)")
-            print("  You can retry later: \(cmd.joined(separator: " "))")
+            print(L10n.ToolSetup.loginFailed(tool.rawValue, process.terminationStatus, cmd.joined(separator: " ")))
         }
     }
 

@@ -4,7 +4,7 @@ import Foundation
 public struct ListCommand: ParsableCommand {
     public static let configuration = CommandConfiguration(
         commandName: "list",
-        abstract: "List all orbital environments"
+        abstract: L10n.List.abstract
     )
     public init() {}
 
@@ -13,9 +13,9 @@ public struct ListCommand: ParsableCommand {
         let activeEnv = ProcessInfo.processInfo.environment["ORBITAL_ACTIVE_ENV"]
         let rows = try Self.environmentRows(activeEnv: activeEnv, store: store)
         if rows.isEmpty {
-            print("No environments found. Create one with: orbital create <name>")
+            print(L10n.List.empty)
         } else {
-            print("  NAME        TOOLS                   LAST USED")
+            print(L10n.List.header)
             print(String(repeating: "-", count: 60))
             rows.forEach { print($0) }
         }

@@ -4,29 +4,29 @@ import Foundation
 public struct DeleteCommand: ParsableCommand {
     public static let configuration = CommandConfiguration(
         commandName: "delete",
-        abstract: "Delete an orbital environment"
+        abstract: L10n.Delete.abstract
     )
 
-    @Argument(help: "Name of the environment to delete")
+    @Argument(help: ArgumentHelp(L10n.Delete.nameHelp))
     public var name: String
 
-    @Flag(name: .long, help: "Skip confirmation prompt")
+    @Flag(name: .long, help: ArgumentHelp(L10n.Delete.forceHelp))
     public var force: Bool = false
 
     public init() {}
 
     public func run() throws {
         if !force {
-            print("Delete environment '\(name)'? This cannot be undone. [y/N] ", terminator: "")
+            print(L10n.Delete.confirm(name), terminator: "")
             let input = readLine()?.lowercased().trimmingCharacters(in: .whitespaces)
             guard input == "y" || input == "yes" else {
-                print("Aborted.")
+                print(L10n.Delete.aborted)
                 return
             }
         }
         let store = EnvironmentStore.default
         try Self.deleteEnvironment(name: name, force: force, store: store)
-        print("Deleted environment: \(name)")
+        print(L10n.Delete.deleted(name))
     }
 
     public static func deleteEnvironment(name: String, force: Bool, store: EnvironmentStore) throws {

@@ -4,10 +4,10 @@ import Foundation
 public struct SetupCommand: ParsableCommand {
     public static let configuration = CommandConfiguration(
         commandName: "setup",
-        abstract: "Install orbital shell integration (use: eval \"$(orbital setup)\")"
+        abstract: L10n.Setup.abstract
     )
 
-    @Option(name: .long, help: "Shell type to configure (bash, zsh). Auto-detected if omitted.")
+    @Option(name: .long, help: ArgumentHelp(L10n.Setup.shellHelp))
     public var shell: String?
 
     public init() {}
@@ -25,7 +25,7 @@ public struct SetupCommand: ParsableCommand {
         if let explicit {
             let lower = explicit.lowercased()
             guard lower == "bash" || lower == "zsh" else {
-                throw ValidationError("Unsupported shell '\(explicit)'. Supported: bash, zsh")
+                throw ValidationError(L10n.Setup.unsupportedShell(explicit))
             }
             return lower
         }
@@ -53,15 +53,15 @@ public struct SetupCommand: ParsableCommand {
             existing = (try? String(contentsOf: url, encoding: .utf8)) ?? ""
         }
         guard !existing.contains(initLine) else {
-            FileHandle.standardError.write(Data("orbital: shell integration already present in \(url.path)\n".utf8))
+            FileHandle.standardError.write(Data(L10n.Setup.alreadyPresent(url.path).utf8))
             return
         }
         let appended = existing + "\n# orbital shell integration\n\(initLine)\n"
         do {
             try appended.write(to: url, atomically: true, encoding: .utf8)
-            FileHandle.standardError.write(Data("orbital: added to \(url.path)\n".utf8))
+            FileHandle.standardError.write(Data(L10n.Setup.addedTo(url.path).utf8))
         } catch {
-            FileHandle.standardError.write(Data("orbital: failed to write \(url.path): \(error.localizedDescription)\n".utf8))
+            FileHandle.standardError.write(Data(L10n.Setup.failedToWrite(url.path, error.localizedDescription).utf8))
         }
     }
 }

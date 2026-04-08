@@ -3,7 +3,7 @@ import ArgumentParser
 public struct InitCommand: ParsableCommand {
     public static let configuration = CommandConfiguration(
         commandName: "init",
-        abstract: "Output shell integration script (add to shell rc: eval \"$(orbital init)\")"
+        abstract: L10n.Init.abstract
     )
     public init() {}
 
