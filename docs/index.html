@@ -72,6 +72,47 @@
     .nav-links a { color: var(--muted); transition: color .15s; }
     .nav-links a:hover { color: var(--text); text-decoration: none; }
 
+    /* items that collapse into hamburger on mobile */
+    .nav-links .nav-collapsible { display: list-item; }
+
+    /* hamburger button */
+    .hamburger {
+      display: none;
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: .25rem;
+      line-height: 1;
+    }
+
+    /* mobile drawer */
+    .mobile-menu {
+      display: none;
+      position: fixed;
+      top: 56px;
+      left: 0;
+      right: 0;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+      z-index: 99;
+      flex-direction: column;
+      gap: .75rem;
+      list-style: none;
+      font-size: .95rem;
+    }
+
+    .mobile-menu.open { display: flex; }
+    .mobile-menu a { color: var(--muted); transition: color .15s; }
+    .mobile-menu a:hover { color: var(--text); text-decoration: none; }
+
+    @media (max-width: 640px) {
+      .nav-links .nav-collapsible { display: none; }
+      .hamburger { display: block; }
+    }
+
     /* ── Hero ── */
     .hero {
       text-align: center;
@@ -374,13 +415,20 @@
     orbital
   </a>
   <ul class="nav-links">
-    <li><a href="#features">Features</a></li>
-    <li><a href="#commands">Commands</a></li>
-    <li><a href="#install">Install</a></li>
+    <li class="nav-collapsible"><a href="#features">Features</a></li>
+    <li class="nav-collapsible"><a href="#commands">Commands</a></li>
+    <li class="nav-collapsible"><a href="#install">Install</a></li>
     <li><a href="https://github.com/OffskyLab/orbital">GitHub</a></li>
     <li><a href="zh_TW.html">繁體中文</a></li>
+    <li><button class="hamburger" onclick="toggleMenu()" aria-label="Menu">&#9776;</button></li>
   </ul>
 </nav>
+
+<ul class="mobile-menu" id="mobile-menu">
+  <li><a href="#features" onclick="closeMenu()">Features</a></li>
+  <li><a href="#commands" onclick="closeMenu()">Commands</a></li>
+  <li><a href="#install" onclick="closeMenu()">Install</a></li>
+</ul>
 
 <!-- Hero -->
 <section class="hero">
@@ -532,6 +580,13 @@
 </footer>
 
 <script>
+function toggleMenu() {
+  document.getElementById('mobile-menu').classList.toggle('open');
+}
+function closeMenu() {
+  document.getElementById('mobile-menu').classList.remove('open');
+}
+
 function copyCode(id) {
   const block = document.getElementById(id);
   const text = block.textContent
