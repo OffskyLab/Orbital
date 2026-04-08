@@ -2,7 +2,7 @@ class Orbital < Formula
   desc "Orbital — AI CLI environment manager for Claude Code, Codex, and Gemini CLI"
   homepage "https://github.com/OffskyLab/orbital"
   url "https://github.com/OffskyLab/orbital/archive/refs/tags/v0.1.4.tar.gz"
-  sha256 "075134b02ab01c7f1d756ee19c47cfde27a6ebc0d2f48da9cf75318fba49f582"
+  sha256 "11dc8858f8d2954adf243164453641662e287980f1abc6750f9689360c76c2ee"
   license "Apache-2.0"
   head "https://github.com/OffskyLab/orbital.git", branch: "main"
 
