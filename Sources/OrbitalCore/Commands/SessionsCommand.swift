@@ -7,11 +7,24 @@ public struct SessionsCommand: ParsableCommand {
         abstract: L10n.Sessions.abstract
     )
 
+    @Option(name: .shortAndLong, help: ArgumentHelp(L10n.Sessions.toolHelp))
+    public var tool: String?
+
     public init() {}
 
     public func run() throws {
         let cwd = FileManager.default.currentDirectoryPath
         let store = EnvironmentStore.default
+
+        let tools: [Tool]
+        if let filter = tool {
+            guard let t = Tool(rawValue: filter) else {
+                throw ValidationError(L10n.Sessions.unknownTool(filter))
+            }
+            tools = [t]
+        } else {
+            tools = Tool.allCases.map { $0 }
+        }
 
         let displayFormatter = DateFormatter()
         displayFormatter.dateStyle = .short
@@ -19,7 +32,7 @@ public struct SessionsCommand: ParsableCommand {
 
         var hasAny = false
 
-        for tool in Tool.allCases {
+        for tool in tools {
             let entries = Self.findSessions(tool: tool, cwd: cwd, store: store)
             guard !entries.isEmpty else { continue }
             hasAny = true

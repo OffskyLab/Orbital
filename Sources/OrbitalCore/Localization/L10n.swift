@@ -349,6 +349,17 @@ public enum L10n {
                 ? "列出當前專案的 AI tool session"
                 : "List AI tool sessions for the current project"
         }
+        public static var toolHelp: String {
+            isChinese
+                ? "篩選工具（claude、codex、gemini）"
+                : "Filter by tool (claude, codex, gemini)"
+        }
+        public static func unknownTool(_ tool: String) -> String {
+            let valid = Tool.allCases.map(\.rawValue).joined(separator: ", ")
+            return isChinese
+                ? "未知工具 '\(tool)'。可用：\(valid)"
+                : "Unknown tool '\(tool)'. Available: \(valid)"
+        }
         public static var noSessions: String {
             isChinese
                 ? "在此專案中找不到任何 session。"
