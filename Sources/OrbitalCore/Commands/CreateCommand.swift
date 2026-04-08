@@ -58,7 +58,7 @@ public struct CreateCommand: ParsableCommand {
         // Setup each tool (install check + auth)
         for t in tools {
             let configDir = store.toolConfigDir(tool: t, environment: name)
-            try ToolSetup.setup(t, configDir: configDir)
+            try ToolSetup.setup(t, configDir: configDir, envName: name)
         }
 
         // Auto-activate if this is the first environment

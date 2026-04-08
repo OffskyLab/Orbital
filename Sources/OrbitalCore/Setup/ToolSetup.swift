@@ -14,7 +14,7 @@ public struct ToolSetup {
 
     /// Run the full setup flow for a tool: check install → offer install → offer auth.
     /// Credentials are stored in configDir (the orbital env's tool subdirectory).
-    public static func setup(_ tool: Tool, configDir: URL) throws {
+    public static func setup(_ tool: Tool, configDir: URL, envName: String) throws {
         guard tool.supportsSetup else { return }
 
         print("")
@@ -36,7 +36,7 @@ public struct ToolSetup {
         if let cmd = tool.authCommand {
             print("")
             print("To log in to \(tool.rawValue), run:")
-            print("  orbital use <your-env-name>")
+            print("  orbital use \(envName)")
             print("  \(cmd.joined(separator: " "))")
         }
     }
