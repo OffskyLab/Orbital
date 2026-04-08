@@ -41,10 +41,17 @@ Downloads a pre-built binary for your platform. No Swift required.
 
 Supports macOS (arm64, x86_64) and Linux (x86_64, arm64). Falls back to building from source if a pre-built binary is not available.
 
-### Homebrew (macOS)
+### Homebrew (macOS / Linux)
 
 ```bash
 brew install OffskyLab/orbital/orbital
+```
+
+### APT (Ubuntu / Debian)
+
+```bash
+echo "deb [trusted=yes] https://offskylab.github.io/apt stable main" | sudo tee /etc/apt/sources.list.d/orbital.list
+sudo apt update && sudo apt install orbital
 ```
 
 ### Build from source
@@ -146,6 +153,15 @@ The interactive wizard also asks about session sharing when creating an environm
 | `orbital which <tool>` | Print the config dir path for a tool in the active environment |
 
 > If an environment is active (`orbital use <name>`), the `-e` flag can be omitted.
+
+### Sessions
+
+| Command | Description |
+|---|---|
+| `orbital sessions` | List all AI tool sessions for the current project |
+| `orbital sessions --claude` | Show only Anthropic Claude sessions |
+| `orbital sessions --codex` | Show only OpenAI Codex sessions |
+| `orbital sessions --gemini` | Show only Google Gemini sessions |
 
 ### Shell integration
 

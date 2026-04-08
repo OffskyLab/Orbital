@@ -474,6 +474,12 @@
     <span class="prompt">$ </span>brew install OffskyLab/orbital/orbital
   </div>
   <div style="height:.75rem"></div>
+  <div class="install-label">或透過 APT 安裝（Ubuntu / Debian）</div>
+  <div class="code-block">
+    <button class="copy-btn" data-cmd='echo "deb [trusted=yes] https://offskylab.github.io/apt stable main" | sudo tee /etc/apt/sources.list.d/orbital.list && sudo apt update && sudo apt install orbital' data-label="複製" data-copied="已複製！">複製</button>
+    <span class="prompt">$ </span>sudo apt install orbital
+  </div>
+  <div style="height:.75rem"></div>
   <div class="install-label">啟用 Shell 整合</div>
   <div class="code-block">
     <button class="copy-btn" data-cmd='eval "$(orbital setup)"' data-label="複製" data-copied="已複製！">複製</button>
@@ -582,6 +588,15 @@
         <div class="command-item"><span class="cmd">orbital tools [-e &lt;name&gt;]</span><span class="cmd-desc">互動式管理工具</span></div>
         <div class="command-item"><span class="cmd">orbital set env &lt;K&gt; &lt;V&gt;</span><span class="cmd-desc">設定環境變數</span></div>
         <div class="command-item"><span class="cmd">orbital unset env &lt;K&gt;</span><span class="cmd-desc">移除環境變數</span></div>
+      </div>
+    </div>
+    <div class="command-group">
+      <div class="command-group-title">Session 管理</div>
+      <div class="command-list">
+        <div class="command-item"><span class="cmd">orbital sessions</span><span class="cmd-desc">列出當前專案所有 session</span></div>
+        <div class="command-item"><span class="cmd">orbital sessions --claude</span><span class="cmd-desc">只看 Claude</span></div>
+        <div class="command-item"><span class="cmd">orbital sessions --codex</span><span class="cmd-desc">只看 Codex</span></div>
+        <div class="command-item"><span class="cmd">orbital sessions --gemini</span><span class="cmd-desc">只看 Gemini</span></div>
       </div>
     </div>
     <div class="command-group">
