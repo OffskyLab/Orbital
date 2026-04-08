@@ -4,7 +4,7 @@ public struct OrbitalCommand: ParsableCommand {
     public static let configuration = CommandConfiguration(
         commandName: "orbital",
         abstract: "AI CLI environment manager — manage accounts for Claude, Codex, Gemini",
-        version: "0.1.1",
+        version: "0.1.2",
         subcommands: [
             SetupCommand.self,
             InitCommand.self,
