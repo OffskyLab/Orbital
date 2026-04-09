@@ -1,3 +1,5 @@
+import Foundation
+
 public enum Tool: String, Codable, CaseIterable, Sendable {
     case claude
     case codex
@@ -12,6 +14,16 @@ public enum Tool: String, Codable, CaseIterable, Sendable {
     }
 
     public var subdirectory: String { rawValue }
+
+    /// The system default config directory (when not using Orbital).
+    public var defaultConfigDir: URL {
+        let home = FileManager.default.homeDirectoryForCurrentUser
+        switch self {
+        case .claude: return home.appendingPathComponent(".claude")
+        case .codex:  return home.appendingPathComponent(".codex")
+        case .gemini: return home.appendingPathComponent(".gemini")
+        }
+    }
 
     public var displayName: String {
         switch self {

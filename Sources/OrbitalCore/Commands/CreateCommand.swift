@@ -44,32 +44,48 @@ public struct CreateCommand: ParsableCommand {
             return t
         }
 
+        let isInteractive = flaggedTools.isEmpty && clone == nil
+
         // Determine which tools to use
         let tools: [Tool]
         if !flaggedTools.isEmpty {
-            // --tool provided — skip wizard
             tools = flaggedTools
         } else if clone != nil {
-            // --clone provided — tools come from source, skip wizard
             tools = []
         } else {
-            // Interactive wizard
-            tools = Self.runWizard()
+            tools = Self.runToolWizard()
         }
 
-        // Determine session isolation (only prompt in interactive wizard mode)
+        // Clone source — interactive wizard or --clone flag
+        let cloneSource: String?
+        if let clone {
+            cloneSource = clone
+        } else if isInteractive {
+            cloneSource = Self.askCloneSource(store: store)
+        } else {
+            cloneSource = nil
+        }
+
+        // Determine session isolation
         let shouldIsolate: Bool
         if isolateSessions {
             shouldIsolate = true
-        } else if flaggedTools.isEmpty && clone == nil {
+        } else if isInteractive {
             shouldIsolate = Self.askSessionIsolation()
         } else {
             shouldIsolate = false
         }
 
-        try Self.createEnvironment(name: name, description: description, cloneFrom: clone, tools: tools, isolateSessions: shouldIsolate, store: store)
+        try Self.createEnvironment(
+            name: name,
+            description: description,
+            cloneFrom: cloneSource,
+            tools: tools,
+            isolateSessions: shouldIsolate,
+            store: store
+        )
         print(L10n.Create.created(name))
-        if let clone { print(L10n.Create.cloned(clone)) }
+        if let cloneSource { print(L10n.Create.cloned(cloneSource)) }
         if !tools.isEmpty { print(L10n.Create.tools(tools.map(\.rawValue).joined(separator: ", "))) }
         print(L10n.Create.sessions(shouldIsolate))
 
@@ -87,13 +103,47 @@ public struct CreateCommand: ParsableCommand {
         }
     }
 
-    static func runWizard() -> [Tool] {
+    // MARK: - Wizard steps
+
+    static func runToolWizard() -> [Tool] {
         let selector = MultiSelect(
             title: L10n.Create.wizardTitle,
             options: Tool.allCases.map(\.rawValue)
         )
         let indices = selector.run()
         return indices.map { Tool.allCases[$0] }
+    }
+
+    static func askCloneSource(store: EnvironmentStore) -> String? {
+        let defaultName = ReservedEnvironment.defaultName
+        var options = [L10n.Create.cloneNone]
+        var sources: [String?] = [nil]
+
+        // Add "default" option (clone from system config)
+        options.append("\(defaultName)")
+        sources.append(defaultName)
+
+        // Add existing environments
+        if let names = try? store.listNames() {
+            for name in names.sorted() {
+                if let env = try? store.load(named: name) {
+                    let label = env.description.isEmpty ? name : "\(name) - \(env.description)"
+                    options.append(label)
+                    sources.append(name)
+                }
+            }
+        }
+
+        // Skip if no environments to clone from (only "don't clone" and "default")
+        guard options.count > 1 else { return nil }
+
+        let selector = SingleSelect(
+            title: L10n.Create.clonePrompt,
+            options: options,
+            selected: 0
+        )
+        let idx = selector.run()
+        return sources[idx]
     }
 
     static func askSessionIsolation() -> Bool {
@@ -107,6 +157,8 @@ public struct CreateCommand: ParsableCommand {
         return input == "n" || input == "no"
     }
 
+    // MARK: - Create logic
+
     public static func createEnvironment(
         name: String,
         description: String,
@@ -117,7 +169,7 @@ public struct CreateCommand: ParsableCommand {
     ) throws {
         var env = OrbitalEnvironment(name: name, description: description, isolateSessions: isolateSessions)
 
-        if let source {
+        if let source, source != ReservedEnvironment.defaultName {
             let sourceEnv = try store.load(named: source)
             env.tools = sourceEnv.tools
             env.env = sourceEnv.env
@@ -126,8 +178,38 @@ public struct CreateCommand: ParsableCommand {
         try store.save(env)
 
         // Add each tool (creates config subdirectory + session symlinks if shared)
-        for t in tools {
+        let toolsToAdd = tools.isEmpty && source != nil ? env.tools : tools
+        for t in toolsToAdd {
             try store.addTool(t, to: name)
+        }
+
+        // Clone config files from source
+        if let source {
+            let fm = FileManager.default
+            let isDefault = source == ReservedEnvironment.defaultName
+            let toolsToCopy = isDefault ? Tool.allCases.filter { fm.fileExists(atPath: $0.defaultConfigDir.path) } : env.tools
+
+            for t in toolsToCopy {
+                let srcDir = isDefault ? t.defaultConfigDir : store.toolConfigDir(tool: t, environment: source)
+                let dstDir = store.toolConfigDir(tool: t, environment: name)
+
+                guard fm.fileExists(atPath: srcDir.path) else { continue }
+
+                // If tool wasn't added yet (cloning from default), add it
+                if isDefault {
+                    try store.addTool(t, to: name)
+                }
+
+                // Copy contents (skip session dirs that are symlinked)
+                let contents = (try? fm.contentsOfDirectory(atPath: srcDir.path)) ?? []
+                for item in contents {
+                    let src = srcDir.appendingPathComponent(item)
+                    let dst = dstDir.appendingPathComponent(item)
+                    // Don't overwrite symlinks (session sharing)
+                    if fm.fileExists(atPath: dst.path) { continue }
+                    try? fm.copyItem(at: src, to: dst)
+                }
+            }
         }
     }
 }

@@ -82,6 +82,14 @@ public enum L10n {
                 ? "選擇要加入的工具（↑↓ 移動，空白鍵切換，Enter 確認）："
                 : "Select tools to add (↑↓ move, space toggle, enter confirm):"
         }
+        public static var clonePrompt: String {
+            isChinese
+                ? "要從現有環境複製設定嗎？（↑↓ 移動，Enter 確認）："
+                : "Clone config from an existing environment? (↑↓ move, enter confirm):"
+        }
+        public static var cloneNone: String {
+            isChinese ? "不複製（全新環境）" : "Don't clone (fresh environment)"
+        }
         public static var sessionSharePrompt: String {
             isChinese
                 ? "是否要在不同環境之間共享 session？（可在切換帳號後接續對話）"
