@@ -44,9 +44,7 @@ public struct CreateCommand: ParsableCommand {
             return t
         }
 
-        let isInteractive = flaggedTools.isEmpty && clone == nil
-
-        // Determine which tools to use
+        // Each wizard step only runs if its corresponding flag wasn't provided
         let tools: [Tool]
         if !flaggedTools.isEmpty {
             tools = flaggedTools
@@ -56,24 +54,18 @@ public struct CreateCommand: ParsableCommand {
             tools = Self.runToolWizard()
         }
 
-        // Clone source — interactive wizard or --clone flag
         let cloneSource: String?
         if let clone {
             cloneSource = clone
-        } else if isInteractive {
-            cloneSource = Self.askCloneSource(store: store)
         } else {
-            cloneSource = nil
+            cloneSource = Self.askCloneSource(store: store)
         }
 
-        // Determine session isolation
         let shouldIsolate: Bool
         if isolateSessions {
             shouldIsolate = true
-        } else if isInteractive {
-            shouldIsolate = Self.askSessionIsolation()
         } else {
-            shouldIsolate = false
+            shouldIsolate = Self.askSessionIsolation()
         }
 
         try Self.createEnvironment(
