@@ -435,6 +435,7 @@
   </a>
   <ul class="nav-links">
     <li class="nav-collapsible"><a href="#features">Features</a></li>
+    <li class="nav-collapsible"><a href="#use-cases">Use Cases</a></li>
     <li class="nav-collapsible"><a href="#commands">Commands</a></li>
     <li class="nav-collapsible"><a href="#install">Install</a></li>
     <li><a href="https://github.com/OffskyLab/Orbital">GitHub</a></li>
@@ -450,6 +451,7 @@
 
 <ul class="mobile-menu" id="mobile-menu">
   <li><a href="#features" onclick="closeMenu()">Features</a></li>
+  <li><a href="#use-cases" onclick="closeMenu()">Use Cases</a></li>
   <li><a href="#commands" onclick="closeMenu()">Commands</a></li>
   <li><a href="#install" onclick="closeMenu()">Install</a></li>
 </ul>
@@ -554,6 +556,48 @@
       <div class="step-body">
         <h4>Resume where you left off</h4>
         <p>After switching accounts, <code>claude --resume</code> picks up your last session. Auth is isolated, but sessions are shared — the best of both worlds.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Use Cases -->
+<section class="section" id="use-cases">
+  <h2 class="section-title">Use Cases</h2>
+  <div class="features-grid">
+    <div class="feature-card">
+      <span class="feature-icon">💼</span>
+      <h3>Work / Personal</h3>
+      <p>Your company uses a Claude Team plan, and you have a personal Pro subscription. Instead of logging out and back in, just switch environments.</p>
+      <div class="code-block" style="margin-top:.75rem;font-size:.8rem">
+        <span class="prompt">$ </span>orbital use work<br/>
+        <span style="color:var(--muted)"># → uses company Team plan</span><br/><br/>
+        <span class="prompt">$ </span>orbital use personal<br/>
+        <span style="color:var(--muted)"># → uses personal Pro plan</span>
+      </div>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">🏢</span>
+      <h3>Multiple Clients</h3>
+      <p>Freelancers and consultants working with different clients — each with their own API keys and credentials. One command to switch context.</p>
+      <div class="code-block" style="margin-top:.75rem;font-size:.8rem">
+        <span class="prompt">$ </span>orbital create client-a --tool claude<br/>
+        <span class="prompt">$ </span>orbital create client-b --tool claude<br/>
+        <span class="prompt">$ </span>orbital use client-a
+      </div>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">💬</span>
+      <h3>Resume After Switching</h3>
+      <p>Mid-conversation with Claude on your work account? Switch to personal, do something, then switch back — your session is still there.</p>
+      <div class="code-block" style="margin-top:.75rem;font-size:.8rem">
+        <span class="prompt">$ </span>orbital use work<br/>
+        <span class="prompt">$ </span>claude<br/>
+        <span style="color:var(--muted)"># ... working on a task ...</span><br/><br/>
+        <span class="prompt">$ </span>orbital use personal<br/>
+        <span class="prompt">$ </span>orbital use work<br/>
+        <span class="prompt">$ </span>claude --resume<br/>
+        <span style="color:var(--muted)"># → picks up exactly where you left off</span>
       </div>
     </div>
   </div>
