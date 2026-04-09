@@ -92,18 +92,18 @@ public enum L10n {
         }
         public static var sessionSharePrompt: String {
             isChinese
-                ? "是否要在不同環境之間共享 session？（可在切換帳號後接續對話）"
-                : "Share sessions across environments? (allows resuming conversations after switching accounts)"
+                ? "Session 共享設定（↑↓ 移動，Enter 確認）："
+                : "Session sharing (↑↓ move, enter confirm):"
         }
         public static var sessionShareYes: String {
             isChinese
-                ? "  [Y] 是，共享 session（預設）"
-                : "  [Y] Yes, share sessions (default)"
+                ? "共享 session（切換帳號後可接續對話）"
+                : "Share sessions (resume conversations after switching)"
         }
         public static var sessionShareNo: String {
             isChinese
-                ? "  [n] 否，隔離各環境的 session"
-                : "  [n] No, isolate sessions per environment"
+                ? "隔離 session（各環境完全獨立）"
+                : "Isolate sessions (fully independent per environment)"
         }
     }
 

@@ -147,14 +147,15 @@ public struct CreateCommand: ParsableCommand {
     }
 
     static func askSessionIsolation() -> Bool {
-        print(L10n.Create.sessionSharePrompt)
-        print(L10n.Create.sessionShareYes)
-        print(L10n.Create.sessionShareNo)
-        print("", terminator: "> ")
-        guard let input = readLine()?.trimmingCharacters(in: .whitespaces).lowercased() else {
-            return false
-        }
-        return input == "n" || input == "no"
+        let selector = SingleSelect(
+            title: L10n.Create.sessionSharePrompt,
+            options: [
+                L10n.Create.sessionShareYes,
+                L10n.Create.sessionShareNo,
+            ],
+            selected: 0
+        )
+        return selector.run() == 1
     }
 
     // MARK: - Create logic
