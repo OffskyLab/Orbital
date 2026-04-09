@@ -440,6 +440,26 @@ public enum L10n {
         }
     }
 
+    // MARK: - MCPSetupCommand
+
+    public enum MCPSetup {
+        public static var abstract: String {
+            isChinese
+                ? "MCP 整合管理"
+                : "MCP integration management"
+        }
+        public static var setupAbstract: String {
+            isChinese
+                ? "在當前專案設定 Orbital MCP server"
+                : "Set up Orbital MCP server for the current project"
+        }
+        public static var success: String {
+            isChinese
+                ? "Orbital MCP server 已設定完成。重新啟動 Claude Code 即可使用。"
+                : "Orbital MCP server configured. Restart Claude Code to use it."
+        }
+    }
+
     // MARK: - MCPServerCommand
 
     public enum MCPServerCmd {

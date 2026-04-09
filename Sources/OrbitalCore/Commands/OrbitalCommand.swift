@@ -22,6 +22,7 @@ public struct OrbitalCommand: ParsableCommand {
             RunCommand.self,
             DelegateCommand.self,
             SessionsCommand.self,
+            MCPSetupCommand.self,
             MCPServerCommand.self,
             ExportCommand.self,
             UnexportCommand.self,
